@@ -56,11 +56,11 @@ public class PriceModule : ModuleBase<SocketCommandContext>
         var iotaPriceOptions = _commandOptions.Get(nameof(CommandOptions.PriceIota));
         if (iotaPriceOptions.Override)
         {
-            await GetPriceForTokenAsync("miota", iotaPriceOptions.Concise, iotaPriceOptions.ShowRelations ? iotaPriceOptions.RelationsOverride.ToArray() : Array.Empty<string>());
+            await GetPriceForTokenAsync("iota", iotaPriceOptions.Concise, iotaPriceOptions.ShowRelations ? iotaPriceOptions.RelationsOverride.ToArray() : Array.Empty<string>());
         }
         else
         {
-            await GetPriceForTokenAsync("miota", relations: "smr");
+            await GetPriceForTokenAsync("iota", relations: "smr");
         }
     }
 
@@ -98,7 +98,7 @@ public class PriceModule : ModuleBase<SocketCommandContext>
         }
         else
         {
-            await GetPriceForTokenAsync("smr", relations: "miota");
+            await GetPriceForTokenAsync("smr", relations: "iota");
         }
     }
 
