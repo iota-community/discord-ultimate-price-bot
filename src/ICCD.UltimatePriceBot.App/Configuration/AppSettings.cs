@@ -16,6 +16,17 @@ public partial class AppSettings
     public ulong? DevelopmentGuildId { get; set; }
 
     /// <summary>
+    /// Gets or sets the server to register slash commands in (instant). If empty, commands are registered globally.
+    /// </summary>
+    public ulong? GuildId { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the old text commands (p, pi, ...) are active. Default true.
+    /// Set to false to switch to slash-commands-only; the Message Content intent is then no longer requested.
+    /// </summary>
+    public bool? EnableTextCommands { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether to enable the name update service.
     /// </summary>
     public bool EnableNameUpdateService { get; set; }
