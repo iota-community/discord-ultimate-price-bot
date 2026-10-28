@@ -151,7 +151,7 @@ public class PriceModule : ModuleBase<SocketCommandContext>
 
             _lastPriceRequests.TryGetValue(tokenId, out var lastPriceRequest2);
 
-            if (DateTime.Now - lastPriceRequest2 < TimeSpan.FromSeconds(30))
+            if (DateTime.Now - lastPriceRequest2 < TimeSpan.FromSeconds(2))
             {
                 await Context.Message.AddReactionAsync(new Emoji("😡"), options);
                 return;

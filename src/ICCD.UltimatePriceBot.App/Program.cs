@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using ICCD.UltimatePriceBot.App.Configuration;
 using ICCD.UltimatePriceBot.App.Services;
@@ -61,17 +62,25 @@ public sealed class Program
     private static void Main()
         => new Program().MainAsync().GetAwaiter().GetResult();
 
+    // Old text commands ("p", "pi", ...) stay on until "EnableTextCommands": false is set in appsettings.json.
+    // They are the only thing that needs the Message Content intent; slash commands don't.
+    private bool TextCommandsEnabled => _configuration.GetValue<bool?>("EnableTextCommands") ?? true;
+
     private ServiceProvider ConfigureServices()
     {
         return new ServiceCollection()
             .AddSingleton(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent,
-                AlwaysDownloadUsers = true,
+                GatewayIntents = TextCommandsEnabled
+                    ? GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+                    : GatewayIntents.AllUnprivileged,
+                AlwaysDownloadUsers = TextCommandsEnabled,
             })
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandlingService>()
+            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+            .AddSingleton<InteractionHandlingService>()
             .AddSingleton<HttpClient>()
             .AddSingleton<NameUpdateService>()
             .AddSingleton(typeof(IPriceDataSource), (x) =>
@@ -118,11 +127,19 @@ public sealed class Program
 
         client.Log += LogAsync;
         services.GetRequiredService<CommandService>().Log += LogAsync;
+        services.GetRequiredService<InteractionService>().Log += LogAsync;
+
+        // Slash commands (/p, /pi, /price, /rice) - always on.
+        await services.GetRequiredService<InteractionHandlingService>().InitializeAsync();
 
         await client.LoginAsync(TokenType.Bot, appSettings.Value.BotToken);
         await client.StartAsync();
 
-        await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+        // Old text commands - only while EnableTextCommands is true (default).
+        if (TextCommandsEnabled)
+        {
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+        }
 
         if (appSettings.Value.EnableNameUpdateService)
         {
